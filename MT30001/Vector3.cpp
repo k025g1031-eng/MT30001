@@ -1,12 +1,16 @@
-#include "vector3.h"
+#include "Vector3.h"
 #include <math.h>
 
-float length(Vector3 v) {
-    return sqrtf(v.x * v.x + v.y * v.y+v.z*v.z);
+float Length(Vector3 v) {
+    return sqrtf(v.x * v.x + v.y * v.y + v.z * v.z);
 }
 
 Vector3 Normalize(Vector3 v) {
-    float len = length(v);
-    if (len == 0) return { 0, 0 ,0};
-    return { v.x / len, v.y / len,v.z/len };
+    float len = Length(v);
+
+    if (len == 0) {
+        return { 0.0f, 0.0f, 0.0f };
+    }
+
+    return { v.x / len, v.y / len, v.z / len };
 }
