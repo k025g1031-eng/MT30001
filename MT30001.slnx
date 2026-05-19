@@ -5,5 +5,5 @@
     <BuildType Name="Release" />
     <Platform Name="x64" />
   </Configurations>
-  <Project Path="MT30001/MT30001.vcxproj" />
+  <Project Path="MT30001/MT30001.vcxproj" Id="1e782022-0eb5-45dd-9a59-a1c789caed78" />
 </Solution>
