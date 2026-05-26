@@ -1,7 +1,8 @@
 #include <Novice.h>
-#include"Vector3.h"
+#include"vector3.h"
 #include"transform.h"
 
+static const int kRowHeight = 20;
 static const int kColumnWidth = 60;
 void VectorScreenPrintf(int x, int y, const Vector3& vector, const char* label) {
 	Novice::ScreenPrintf(x, y, "%.2f", vector.x);
@@ -10,19 +11,27 @@ void VectorScreenPrintf(int x, int y, const Vector3& vector, const char* label) 
 	Novice::ScreenPrintf(x + kColumnWidth * 3, y, "%s", label);
 }
 
+void MatrixScreenPrintf(int x, int y, const Matrix4x4& matrix, const char* label) {
+	Novice::ScreenPrintf(x, y, label);
+	for (int row = 0; row < 4; ++row) {
+		for (int column = 0; column < 4; ++column) {
+			Novice::ScreenPrintf(
+				x + column * kColumnWidth, y + (20 + (row)*kRowHeight), "%6.02f", matrix.m[row][column]);
+		}
+	}
+}
 const char kWindowTitle[] = "GC2C_03_シュウ_シビ";
 
 // Windowsアプリでのエントリーポイント(main関数)
-int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
+int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	// ライブラリの初期化
 	Novice::Initialize(kWindowTitle, 1280, 720);
 
 	// キー入力結果を受け取る箱
-	char keys[256] = {0};
-	char preKeys[256] = {0};
+	char keys[256] = { 0 };
+	char preKeys[256] = { 0 };
 
-	int kRowHeight = 20;
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
 		// フレームの開始
@@ -35,16 +44,21 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		///
 		/// ↓更新処理ここから
 		///
-		Vector3 v1{ 1.0f, 3.0f, -5.0f };
-		Vector3 v2{ 4.0f, -1.0f, 2.0f };
-		float k = { 4.0f };
-		Vector3 resultAdd = Add(v1, v2);
-		Vector3 resultSubtract = Subtract(v1, v2);
-		Vector3 resultMultiply = Multiply(k, v1);
-		float resultDot = Dot(v1, v2);
-		float resultLength = length(v1);
-		Vector3 resultNormalize = Normalize(v2);
-		
+		Vector3 translate{ 4.1f,2.6f,0.8f };
+		Vector3 scale{ 1.5f,5.2f,7.3f };
+		Matrix4x4 translateMatrix = MakeTranslateMatrix(translate);
+		Matrix4x4 scaleMatrix = MakeScaleMatrix(scale);
+		Vector3 point{ 2.3f, 3.8f,1.4f };
+		Matrix4x4 transformMatrix = {
+			1.0f, 2.0f, 3.0f, 4.0f,
+			3.0f, 1.0f, 1.0f, 2.0f,
+			1.0f, 4.0f, 2.0f, 3.0f,
+			2.0f, 2.0f, 1.0f, 3.0f };
+		Vector3 transformed = Transform(point, transformMatrix);
+
+		VectorScreenPrintf(0, 0, transformed, "transformed");
+		MatrixScreenPrintf(0, 20, translateMatrix, "translateMatrix");
+		MatrixScreenPrintf(0, (20 + kRowHeight * 5), scaleMatrix, "scaleMatrix");
 		///
 		/// ↑更新処理ここまで
 		///
@@ -52,12 +66,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		///
 		/// ↓描画処理ここから
 		///
-		VectorScreenPrintf(0, 0, resultAdd, " : Add");
-		VectorScreenPrintf(0, kRowHeight, resultSubtract, ":Subtract");
-		VectorScreenPrintf(0, kRowHeight * 2, resultMultiply, " :Multiply");
-		Novice::ScreenPrintf(0, kRowHeight * 3, "%.02f : Dot", resultDot);
-		Novice::ScreenPrintf(0, kRowHeight * 4, "%.02f : Length", resultLength);
-		VectorScreenPrintf(0, kRowHeight * 5, resultNormalize, " :Normalize");
+
 		///
 		/// ↑描画処理ここまで
 		///
