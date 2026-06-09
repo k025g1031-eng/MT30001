@@ -6,6 +6,6 @@ struct Vector3 {
 };
 
 
-float length(Vector3 v);
+float Length(Vector3 v);
 Vector3 Normalize(Vector3 v);
 
