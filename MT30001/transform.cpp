@@ -1,6 +1,10 @@
 #include "Transform.h"
-
 #include <cmath>
+#include<Novice.h>
+
+
+
+const float kPi = 3.14f;
 
 Vector3 Cross(const Vector3& v1, const Vector3& v2) {
 
@@ -246,4 +250,134 @@ Vector3 Transform(
     }
 
     return result;
+}
+
+void DrawGrid(
+    const Matrix4x4& viewProjectionMatrix,
+    const Matrix4x4& viewportMatrix) {
+
+    Matrix4x4 vpvMatrix = Multiply(viewProjectionMatrix, viewportMatrix);
+
+    const int kGridHalfWidth = 10;
+
+    for (int i = -kGridHalfWidth; i <= kGridHalfWidth; i++) {
+
+        Vector3 start = {
+            (float)i,
+            0.0f,
+            -(float)kGridHalfWidth
+        };
+
+        Vector3 end = {
+            (float)i,
+            0.0f,
+            (float)kGridHalfWidth
+        };
+
+        Vector3 s = Transform(start, vpvMatrix);
+        Vector3 e = Transform(end, vpvMatrix);
+
+        Novice::DrawLine(
+            (int)s.x,
+            (int)s.y,
+            (int)e.x,
+            (int)e.y,
+            0xAAAAAAAA);
+    }
+
+    for (int i = -kGridHalfWidth; i <= kGridHalfWidth; i++) {
+
+        Vector3 start = {
+            -(float)kGridHalfWidth,
+            0.0f,
+            (float)i
+        };
+
+        Vector3 end = {
+            (float)kGridHalfWidth,
+            0.0f,
+            (float)i
+        };
+
+        Vector3 s = Transform(start, vpvMatrix);
+        Vector3 e = Transform(end, vpvMatrix);
+
+        Novice::DrawLine(
+            (int)s.x,
+            (int)s.y,
+            (int)e.x,
+            (int)e.y,
+            0xAAAAAAAA);}
+}
+
+void DrawSphere(
+    const Sphere& sphere,
+    const Matrix4x4& viewProjectionMatrix,
+    const Matrix4x4& viewportMatrix,
+    uint32_t color) {
+
+    Matrix4x4 vpvMatrix = Multiply(viewProjectionMatrix, viewportMatrix);
+
+    const int kSubdivision = 16;
+
+    for (int latIndex = 0; latIndex < kSubdivision; latIndex++) {
+
+        float lat0 = -kPi / 2.0f +
+            (float)latIndex / kSubdivision * kPi;
+
+        float lat1 = -kPi / 2.0f +
+            (float)(latIndex + 1) / kSubdivision * kPi;
+
+        for (int lonIndex = 0; lonIndex < kSubdivision; lonIndex++) {
+
+            float lon0 =
+                (float)lonIndex / kSubdivision * 2.0f * kPi;
+
+            float lon1 =
+                (float)(lonIndex + 1) / kSubdivision * 2.0f * kPi;
+
+            Vector3 p0{
+                sphere.center.x + sphere.radius * cosf(lat0) * cosf(lon0),
+                sphere.center.y + sphere.radius * sinf(lat0),
+                sphere.center.z + sphere.radius * cosf(lat0) * sinf(lon0)
+            };
+
+            Vector3 p1{
+                sphere.center.x + sphere.radius * cosf(lat1) * cosf(lon0),
+                sphere.center.y + sphere.radius * sinf(lat1),
+                sphere.center.z + sphere.radius * cosf(lat1) * sinf(lon0)
+            };
+
+            Vector3 p2{
+                sphere.center.x + sphere.radius * cosf(lat0) * cosf(lon1),
+                sphere.center.y + sphere.radius * sinf(lat0),
+                sphere.center.z + sphere.radius * cosf(lat0) * sinf(lon1)
+            };
+
+            Vector3 p3{
+                sphere.center.x + sphere.radius * cosf(lat1) * cosf(lon1),
+                sphere.center.y + sphere.radius * sinf(lat1),
+                sphere.center.z + sphere.radius * cosf(lat1) * sinf(lon1)
+            };
+
+            p0 = Transform(p0, vpvMatrix);
+            p1 = Transform(p1, vpvMatrix);
+            p2 = Transform(p2, vpvMatrix);
+            p3 = Transform(p3, vpvMatrix);
+
+            Novice::DrawLine(
+                (int)p0.x,
+                (int)p0.y,
+                (int)p1.x,
+                (int)p1.y,
+                color);
+
+            Novice::DrawLine(
+                (int)p0.x,
+                (int)p0.y,
+                (int)p2.x,
+                (int)p2.y,
+                color);
+        }
+    }
 }
