@@ -1,10 +1,66 @@
 #include "Transform.h"
 #include <cmath>
 #include<Novice.h>
+#include <algorithm>
 
 
+Vector3 Multiply(float scalar, const Vector3& vector)
+{
+    return {
+        scalar * vector.x,
+        scalar * vector.y,
+        scalar * vector.z
+    };
+}
 
-const float kPi = 3.14f;
+float Dot(const Vector3& v1, const Vector3& v2)
+{
+    return
+        v1.x * v2.x +
+        v1.y * v2.y +
+        v1.z * v2.z;
+}
+
+Vector3 Subtract(const Vector3& v1, const Vector3& v2)
+{
+    return {
+        v1.x - v2.x,
+        v1.y - v2.y,
+        v1.z - v2.z
+    };
+}
+
+Vector3 Project(const Vector3& v1, const Vector3& v2)
+{
+    float t = Dot(v1, v2) / Dot(v2, v2);
+
+    return Multiply(t, v2);
+}
+
+Vector3 Add(const Vector3& v1, const Vector3& v2) {
+    return{
+        v1.x + v2.x,
+        v1.y + v2.y,
+        v1.z + v2.z
+    };
+}
+
+Vector3 ClosestPoint(const Vector3& point, const Segment& segment)
+{
+    
+    Vector3 toPoint = Subtract(point, segment.origin);
+
+    float t = Dot(toPoint, segment.diff) /
+        Dot(segment.diff, segment.diff);
+
+    t = std::clamp(t, 0.0f, 1.0f);
+
+    return Add(
+        segment.origin,
+        Multiply(t, segment.diff)
+    );
+}
+
 
 Vector3 Cross(const Vector3& v1, const Vector3& v2) {
 
@@ -310,74 +366,3 @@ void DrawGrid(
             0xAAAAAAAA);}
 }
 
-void DrawSphere(
-    const Sphere& sphere,
-    const Matrix4x4& viewProjectionMatrix,
-    const Matrix4x4& viewportMatrix,
-    uint32_t color) {
-
-    Matrix4x4 vpvMatrix = Multiply(viewProjectionMatrix, viewportMatrix);
-
-    const int kSubdivision = 16;
-
-    for (int latIndex = 0; latIndex < kSubdivision; latIndex++) {
-
-        float lat0 = -kPi / 2.0f +
-            (float)latIndex / kSubdivision * kPi;
-
-        float lat1 = -kPi / 2.0f +
-            (float)(latIndex + 1) / kSubdivision * kPi;
-
-        for (int lonIndex = 0; lonIndex < kSubdivision; lonIndex++) {
-
-            float lon0 =
-                (float)lonIndex / kSubdivision * 2.0f * kPi;
-
-            float lon1 =
-                (float)(lonIndex + 1) / kSubdivision * 2.0f * kPi;
-
-            Vector3 p0{
-                sphere.center.x + sphere.radius * cosf(lat0) * cosf(lon0),
-                sphere.center.y + sphere.radius * sinf(lat0),
-                sphere.center.z + sphere.radius * cosf(lat0) * sinf(lon0)
-            };
-
-            Vector3 p1{
-                sphere.center.x + sphere.radius * cosf(lat1) * cosf(lon0),
-                sphere.center.y + sphere.radius * sinf(lat1),
-                sphere.center.z + sphere.radius * cosf(lat1) * sinf(lon0)
-            };
-
-            Vector3 p2{
-                sphere.center.x + sphere.radius * cosf(lat0) * cosf(lon1),
-                sphere.center.y + sphere.radius * sinf(lat0),
-                sphere.center.z + sphere.radius * cosf(lat0) * sinf(lon1)
-            };
-
-            Vector3 p3{
-                sphere.center.x + sphere.radius * cosf(lat1) * cosf(lon1),
-                sphere.center.y + sphere.radius * sinf(lat1),
-                sphere.center.z + sphere.radius * cosf(lat1) * sinf(lon1)
-            };
-
-            p0 = Transform(p0, vpvMatrix);
-            p1 = Transform(p1, vpvMatrix);
-            p2 = Transform(p2, vpvMatrix);
-            p3 = Transform(p3, vpvMatrix);
-
-            Novice::DrawLine(
-                (int)p0.x,
-                (int)p0.y,
-                (int)p1.x,
-                (int)p1.y,
-                color);
-
-            Novice::DrawLine(
-                (int)p0.x,
-                (int)p0.y,
-                (int)p2.x,
-                (int)p2.y,
-                color);
-        }
-    }
-}

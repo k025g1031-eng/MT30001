@@ -4,6 +4,7 @@
 #include "Vector3.h"
 #include "Transform.h"
 
+
 static const int kRowHeight = 20;
 static const int kColumnWidth = 60;
 const int kWindowWidth = 1280;
@@ -39,15 +40,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     char preKeys[256] = { 0 };
 
 
-    Vector3 v1{ 1.2f,-3.9f,2.5f };
-    Vector3 v2{ 2.8f,0.4f,-1.3f };
-    Vector3 cross = Cross(v1, v2);
+    Segment segment{ {-2.0f,-1.0f,0.0f},{3.0f, 2.0f, 2.0f} };
+    Vector3 point{ -1.5f, 0.6f, 0.6f };
+
+    Vector3 project{};
+    Vector3 closestPoint{};
 
     Vector3 cameraTranslate{0.0f, 1.9f, -6.49f};
     Vector3 cameraRotate{ 0.26f,0.0f,0.0f };
 
-    Sphere sphere{{0.0f,1.0f,0.0f},1.0f};
-    
+ 
 
     while (Novice::ProcessMessage() == 0) {
 
@@ -57,9 +59,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
         ImGui::DragFloat3("Camera Translate", &cameraTranslate.x, 0.01f);
         ImGui::DragFloat3("Camera Rotate", &cameraRotate.x, 0.01f);
+        ImGui::DragFloat3("Point", &point.x, 0.01f);
 
-        ImGui::DragFloat3("Sphere Center", &sphere.center.x, 0.01f);
-        ImGui::DragFloat("Sphere Radius", &sphere.radius, 0.01f, 0.1f, 10.0f);
+        ImGui::DragFloat3("Segment Origin", &segment.origin.x, 0.01f);
+
+        ImGui::DragFloat3("Segment Diff", &segment.diff.x, 0.01f);
+
+        ImGui::InputFloat3("Project", &project.x, "%.3f", ImGuiInputTextFlags_ReadOnly);
 
         ImGui::End();
 
@@ -70,7 +76,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         /// ↓更新処理ここから
         ///
 
-       
+        project = Project(
+            Subtract(point, segment.origin),
+            segment.diff);
+
+        closestPoint = ClosestPoint(
+            point,
+            segment);
+
         Matrix4x4 cameraMatrix =
             MakeAffineMatrix(
                 { 1.0f,1.0f,1.0f },
@@ -115,13 +128,25 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
             viewProjectionMatrix,
             viewportMatrix);
 
-        DrawSphere(
-            sphere,
-            viewProjectionMatrix,
-            viewportMatrix,
+        Vector3 start =
+            Transform(
+                Transform(segment.origin, viewProjectionMatrix),
+                viewportMatrix);
+
+        Vector3 end =
+            Transform(
+                Transform(
+                    Add(segment.origin, segment.diff),
+                    viewProjectionMatrix),
+                viewportMatrix);
+
+        Novice::DrawLine(
+            int(start.x),
+            int(start.y),
+            int(end.x),
+            int(end.y),
             WHITE);
 
-        VectorScreenPrintf(0, 0, cross, "Cross");
 
         ///
         /// ↑描画処理ここまで
