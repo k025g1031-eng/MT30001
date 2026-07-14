@@ -3,6 +3,7 @@
 #include <imgui.h>
 #include "Vector3.h"
 #include "Transform.h"
+#include"collision.h"
 
 static const int kRowHeight = 20;
 static const int kColumnWidth = 60;
@@ -46,20 +47,53 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     Vector3 cameraTranslate{0.0f, 1.9f, -6.49f};
     Vector3 cameraRotate{ 0.26f,0.0f,0.0f };
 
-    Sphere sphere{{0.0f,1.0f,0.0f},1.0f};
+    Sphere sphere1{
+    { -2.0f,0.0f,0.0f },
+    1.0f
+    };
+
+
+    Sphere sphere2{
+        { 2.0f,0.0f,0.0f },
+        1.0f
+    };
     
 
     while (Novice::ProcessMessage() == 0) {
 
         Novice::BeginFrame();
 
-        ImGui::Begin("Control");
+        ImGui::Begin("Sphere");
 
-        ImGui::DragFloat3("Camera Translate", &cameraTranslate.x, 0.01f);
-        ImGui::DragFloat3("Camera Rotate", &cameraRotate.x, 0.01f);
 
-        ImGui::DragFloat3("Sphere Center", &sphere.center.x, 0.01f);
-        ImGui::DragFloat("Sphere Radius", &sphere.radius, 0.01f, 0.1f, 10.0f);
+        ImGui::DragFloat3(
+            "Sphere1 Center",
+            &sphere1.center.x,
+            0.01f
+        );
+
+
+        ImGui::DragFloat(
+            "Sphere1 Radius",
+            &sphere1.radius,
+            0.01f
+        );
+
+
+
+        ImGui::DragFloat3(
+            "Sphere2 Center",
+            &sphere2.center.x,
+            0.01f
+        );
+
+
+        ImGui::DragFloat(
+            "Sphere2 Radius",
+            &sphere2.radius,
+            0.01f
+        );
+
 
         ImGui::End();
 
@@ -101,7 +135,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
                 0.0f,
                 1.0f);
 
-        
+        uint32_t color1 = WHITE;
+        uint32_t color2 = WHITE;
+
+
+        if (IsCollision(sphere1, sphere2))
+        {
+            color2 = RED;
+        }
 
         ///
         /// ↑更新処理ここまで
@@ -116,10 +157,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
             viewportMatrix);
 
         DrawSphere(
-            sphere,
+            sphere1,
             viewProjectionMatrix,
             viewportMatrix,
-            WHITE);
+            color1
+        );
+
+
+        DrawSphere(
+            sphere2,
+            viewProjectionMatrix,
+            viewportMatrix,
+            color2
+        );
 
         VectorScreenPrintf(0, 0, cross, "Cross");
 

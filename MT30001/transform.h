@@ -1,15 +1,12 @@
 #pragma once
 #include"Vector3.h"
+#include"sphere.h"
 #include <cstdint>
 
 struct Matrix4x4 {
     float m[4][4];
 };
 
-struct Sphere {
-    Vector3 center; 
-    float radius;
-};
 
 Vector3 Cross(const Vector3& v1, const Vector3& v2);
 

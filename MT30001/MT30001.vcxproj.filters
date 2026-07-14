@@ -20,6 +20,12 @@
     <Filter Include="transform">
       <UniqueIdentifier>{092ae9ff-6e0e-41fb-b229-fb158c57ca7d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="mode">
+      <UniqueIdentifier>{716d527b-dbca-4386-b80c-06678c6a3f92}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="collision">
+      <UniqueIdentifier>{12118856-4ed4-4638-b0bc-18c10bf00095}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -31,6 +37,9 @@
     </ClCompile>
     <ClCompile Include="transform.cpp">
       <Filter>transform</Filter>
+    </ClCompile>
+    <ClCompile Include="collision.cpp">
+      <Filter>collision</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -120,6 +129,12 @@
     </ClInclude>
     <ClInclude Include="transform.h">
       <Filter>transform</Filter>
+    </ClInclude>
+    <ClInclude Include="sphere.h">
+      <Filter>mode</Filter>
+    </ClInclude>
+    <ClInclude Include="collision.h">
+      <Filter>collision</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
