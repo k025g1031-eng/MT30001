@@ -1,4 +1,4 @@
-#include "Transform.h"
+﻿#include "Transform.h"
 #include <cmath>
 #include<Novice.h>
 #include <algorithm>
@@ -121,6 +121,28 @@ Matrix4x4 MakeRotateYMatrix(float radian) {
 
     return result;
 }
+Matrix4x4 MakeRotateXMatrix(float radian) {
+
+    Matrix4x4 result = MakeIdentity4x4();
+
+    result.m[1][1] = cosf(radian);
+    result.m[1][2] = sinf(radian);
+    result.m[2][1] = -sinf(radian);
+    result.m[2][2] = cosf(radian);
+
+    return result;
+}
+Matrix4x4 MakeRotateZMatrix(float radian) {
+
+    Matrix4x4 result = MakeIdentity4x4();
+
+    result.m[0][0] = cosf(radian);
+    result.m[0][1] = sinf(radian);
+    result.m[1][0] = -sinf(radian);
+    result.m[1][1] = cosf(radian);
+
+    return result;
+}
 
 Matrix4x4 MakeTranslateMatrix(const Vector3& translate) {
 
@@ -233,40 +255,25 @@ Matrix4x4 MakeAffineMatrix(
     const Vector3& rotate,
     const Vector3& translate) {
 
-    Matrix4x4 result{};
+    Matrix4x4 scaleMatrix = MakeIdentity4x4();
+    scaleMatrix.m[0][0] = scale.x;
+    scaleMatrix.m[1][1] = scale.y;
+    scaleMatrix.m[2][2] = scale.z;
 
-    float cx = cosf(rotate.x);
-    float sx = sinf(rotate.x);
+    Matrix4x4 rotateMatrix =
+        Multiply(
+            Multiply(
+                MakeRotateXMatrix(rotate.x),
+                MakeRotateYMatrix(rotate.y)),
+            MakeRotateZMatrix(rotate.z));
 
-    float cy = cosf(rotate.y);
-    float sy = sinf(rotate.y);
+    Matrix4x4 translateMatrix =
+        MakeTranslateMatrix(translate);
 
-    float cz = cosf(rotate.z);
-    float sz = sinf(rotate.z);
-
-    result.m[0][0] = scale.x * (cy * cz);
-    result.m[0][1] = scale.x * (cy * sz);
-    result.m[0][2] = scale.x * (-sy);
-    result.m[0][3] = 0.0f;
-
-    result.m[1][0] = scale.y * (sx * sy * cz - cx * sz);
-    result.m[1][1] = scale.y * (sx * sy * sz + cx * cz);
-    result.m[1][2] = scale.y * (sx * cy);
-    result.m[1][3] = 0.0f;
-
-    result.m[2][0] = scale.z * (cx * sy * cz + sx * sz);
-    result.m[2][1] = scale.z * (cx * sy * sz - sx * cz);
-    result.m[2][2] = scale.z * (cx * cy);
-    result.m[2][3] = 0.0f;
-
-    result.m[3][0] = translate.x;
-    result.m[3][1] = translate.y;
-    result.m[3][2] = translate.z;
-    result.m[3][3] = 1.0f;
-
-    return result;
+    return Multiply(
+        Multiply(scaleMatrix, rotateMatrix),
+        translateMatrix);
 }
-
 Vector3 Transform(
     const Vector3& vector,
     const Matrix4x4& matrix) {
@@ -312,7 +319,6 @@ void DrawGrid(
     const Matrix4x4& viewProjectionMatrix,
     const Matrix4x4& viewportMatrix) {
 
-    Matrix4x4 vpvMatrix = Multiply(viewProjectionMatrix, viewportMatrix);
 
     const int kGridHalfWidth = 10;
 
@@ -330,8 +336,15 @@ void DrawGrid(
             (float)kGridHalfWidth
         };
 
-        Vector3 s = Transform(start, vpvMatrix);
-        Vector3 e = Transform(end, vpvMatrix);
+        Vector3 s =
+            Transform(
+                Transform(start, viewProjectionMatrix),
+                viewportMatrix);
+
+        Vector3 e =
+            Transform(
+                Transform(end, viewProjectionMatrix),
+                viewportMatrix);
 
         Novice::DrawLine(
             (int)s.x,
@@ -355,8 +368,15 @@ void DrawGrid(
             (float)i
         };
 
-        Vector3 s = Transform(start, vpvMatrix);
-        Vector3 e = Transform(end, vpvMatrix);
+        Vector3 s =
+            Transform(
+                Transform(start, viewProjectionMatrix),
+                viewportMatrix);
+
+        Vector3 e =
+            Transform(
+                Transform(end, viewProjectionMatrix),
+                viewportMatrix);
 
         Novice::DrawLine(
             (int)s.x,
@@ -366,3 +386,69 @@ void DrawGrid(
             0xAAAAAAAA);}
 }
 
+void DrawSphere(
+    const Sphere& sphere,
+    const Matrix4x4& viewProjectionMatrix,
+    const Matrix4x4& viewportMatrix,
+    uint32_t color) {
+
+    const uint32_t kSubdivision = 16;
+    const float kLonEvery = 2.0f * 3.1415926535f / float(kSubdivision);
+    const float kLatEvery = 3.1415926535f / float(kSubdivision);
+
+    for (uint32_t latIndex = 0; latIndex < kSubdivision; latIndex++) {
+
+        float lat = -3.1415926535f / 2.0f + kLatEvery * latIndex;
+        float nextLat = lat + kLatEvery;
+
+        for (uint32_t lonIndex = 0; lonIndex < kSubdivision; lonIndex++) {
+
+            float lon = lonIndex * kLonEvery;
+            float nextLon = lon + kLonEvery;
+
+            Vector3 a{
+                sphere.center.x + sphere.radius * cosf(lat) * cosf(lon),
+                sphere.center.y + sphere.radius * sinf(lat),
+                sphere.center.z + sphere.radius * cosf(lat) * sinf(lon)
+            };
+
+            Vector3 b{
+                sphere.center.x + sphere.radius * cosf(nextLat) * cosf(lon),
+                sphere.center.y + sphere.radius * sinf(nextLat),
+                sphere.center.z + sphere.radius * cosf(nextLat) * sinf(lon)
+            };
+
+            Vector3 c{
+                sphere.center.x + sphere.radius * cosf(lat) * cosf(nextLon),
+                sphere.center.y + sphere.radius * sinf(lat),
+                sphere.center.z + sphere.radius * cosf(lat) * sinf(nextLon)
+            };
+
+            a = Transform(
+                Transform(a, viewProjectionMatrix),
+                viewportMatrix);
+
+            b = Transform(
+                Transform(b, viewProjectionMatrix),
+                viewportMatrix);
+
+            c = Transform(
+                Transform(c, viewProjectionMatrix),
+                viewportMatrix);
+
+            Novice::DrawLine(
+                int(a.x),
+                int(a.y),
+                int(b.x),
+                int(b.y),
+                color);
+
+            Novice::DrawLine(
+                int(a.x),
+                int(a.y),
+                int(c.x),
+                int(c.y),
+                color);
+        }
+    }
+}

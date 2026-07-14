@@ -45,6 +45,8 @@ Matrix4x4 MakeIdentity4x4();
 Matrix4x4 Multiply(const Matrix4x4& m1, const Matrix4x4& m2);
 
 Matrix4x4 MakeRotateYMatrix(float radian);
+Matrix4x4 MakeRotateXMatrix(float radian);
+Matrix4x4 MakeRotateZMatrix(float radian);
 
 Matrix4x4 MakeTranslateMatrix(const Vector3& translate);
 
@@ -85,3 +87,8 @@ void DrawGrid(
     const Matrix4x4& viewProjectionMatrix,
     const Matrix4x4& viewportMatrix);
 
+void DrawSphere(
+    const Sphere& sphere,
+    const Matrix4x4& viewProjectionMatrix,
+    const Matrix4x4& viewportMatrix,
+    uint32_t color);

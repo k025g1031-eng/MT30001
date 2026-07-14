@@ -46,8 +46,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     Vector3 project{};
     Vector3 closestPoint{};
 
-    Vector3 cameraTranslate{0.0f, 1.9f, -6.49f};
-    Vector3 cameraRotate{ 0.26f,0.0f,0.0f };
+   Vector3 cameraTranslate{0.0f, 1.9f, -6.49f};
+    Vector3 cameraRotate{ 0.0f,0.0f,0.0f };
 
  
 
@@ -83,6 +83,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         closestPoint = ClosestPoint(
             point,
             segment);
+
+        Sphere pointSphere{ 
+            point,
+            0.01f
+        };
+
+        Sphere closestPointSphere{
+            closestPoint,
+            0.01f
+        };
 
         Matrix4x4 cameraMatrix =
             MakeAffineMatrix(
@@ -127,6 +137,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         DrawGrid(
             viewProjectionMatrix,
             viewportMatrix);
+
+        DrawSphere(
+            pointSphere,
+            viewProjectionMatrix,
+            viewportMatrix,
+            RED);
+
+        DrawSphere(
+            closestPointSphere,
+            viewProjectionMatrix,
+            viewportMatrix,
+            BLACK);
 
         Vector3 start =
             Transform(
